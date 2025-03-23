@@ -14,7 +14,8 @@
    开始结束时间为Long类型，代表毫秒级的时间戳
 2. 指定差分站编号，查询该站最近的64条数据  
    差分站编号为String类型，无前导零
-3. TODO，分页分表，OLAP，时序特色查询
+3. 新增接口，status返回最近15分钟每分钟的接收情况，三种状态计数，依次是正常、超时、初始
+4. TODO，分页分表，OLAP，时序特色查询
 
 ### converter
 
@@ -79,7 +80,11 @@ try {
 
 ![img_4.png](images/img_4.png)
 
+![img_5.png](images/img_5.png)
+
 ![img_3.png](images/img_3.png)
+
+![img_7.png](images/img_7.png)
 
 ## 安装部署
 ### influxdb
@@ -99,3 +104,9 @@ docker run -d -p 8086:8086 --name influxdb influxdb:1.7.7
   <version>2.24</version>
 </dependency>
 ```
+
+## Grafana
+
+实时观测差分站改正数，面板中绘制最近15分钟的数据走势
+
+![image_6.png](images/img_6.png)

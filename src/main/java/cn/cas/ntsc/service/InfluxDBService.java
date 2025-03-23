@@ -2,8 +2,10 @@ package cn.cas.ntsc.service;
 
 import cn.cas.ntsc.converter.Converter;
 import cn.cas.ntsc.dao.Difference;
+import cn.cas.ntsc.dao.DifferentStatus;
 import cn.cas.ntsc.dto.DifferenceDTO;
 
+import cn.cas.ntsc.dto.DifferentStatusDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.Query;
@@ -13,7 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -77,5 +80,34 @@ public class InfluxDBService {
         final InfluxDBResultMapper influxDBResultMapper = new InfluxDBResultMapper();
         final List<Difference> pojoList = influxDBResultMapper.toPOJO(queryResult, Difference.class);
         return pojoList.stream().flatMap(d -> Converter.convert(d).stream()).toList();
+    }
+
+    public DifferentStatusDTO queryStatus() {
+        // last 15 min
+        final Instant start = Instant.now().minusSeconds(15 * 60);
+        final String startString = start.toString();
+        final List<String> status = List.of("NORMAL", "TIMEOUT", "INITIAL");
+        final InfluxDBResultMapper influxDBResultMapper = new InfluxDBResultMapper();
+        final DifferentStatusDTO differentStatusDTO = new DifferentStatusDTO();
+        differentStatusDTO.setTimeStatus(new TreeMap<>());
+        final AtomicInteger idx = new AtomicInteger();
+        status.forEach(st -> {
+            final String queryString = String.format(
+                    "SELECT COUNT(\"frameStatus\") FROM \"%s\" WHERE \"time\" >= '%s' AND \"frameStatus\" = '%s' GROUP BY \"frameStatus\", time(1m)",
+                    measureName, startString, st);
+            final Query query = new Query(queryString, DBName);
+            final QueryResult queryResult = influxDB.query(query);
+            final List<DifferentStatus> pojoList = influxDBResultMapper.toPOJO(queryResult, DifferentStatus.class);
+            pojoList.forEach(pojo -> {
+                if (!differentStatusDTO.getTimeStatus().containsKey(pojo.getTime())) {
+                    differentStatusDTO.getTimeStatus().put(pojo.getTime(), new ArrayList<>());
+                    differentStatusDTO.getTimeStatus().get(pojo.getTime()).addAll(Arrays.asList(0, 0, 0));
+
+                }
+                differentStatusDTO.getTimeStatus().get(pojo.getTime()).set(idx.get(), pojo.getCount());
+            });
+            idx.getAndIncrement();
+        });
+        return differentStatusDTO;
     }
 }

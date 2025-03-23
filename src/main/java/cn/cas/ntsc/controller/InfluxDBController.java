@@ -2,6 +2,7 @@ package cn.cas.ntsc.controller;
 
 import cn.cas.ntsc.HttpResult;
 import cn.cas.ntsc.dto.DifferenceDTO;
+import cn.cas.ntsc.dto.DifferentStatusDTO;
 import cn.cas.ntsc.service.InfluxDBService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,5 +41,12 @@ public class InfluxDBController {
         log.info("recent query called on {}", parentId);
         final List<DifferenceDTO> differenceDTOS = influxDBService.queryRecent(parentId);
         return HttpResult.success("success", differenceDTOS);
+    }
+
+    @GetMapping("/status")
+    public HttpResult queryStatus() {
+        log.info("status called");
+        final DifferentStatusDTO statusDTO = influxDBService.queryStatus();
+        return HttpResult.success("success", statusDTO);
     }
 }
