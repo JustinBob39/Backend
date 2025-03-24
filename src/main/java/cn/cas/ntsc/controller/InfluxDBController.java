@@ -31,7 +31,7 @@ public class InfluxDBController {
         log.info("range query called on {} from {} to {}", parentId, rangeBegin, rangeEnd);
         final List<DifferenceDTO> differenceDTOS = influxDBService.queryRange(parentId, rangeBegin, rangeEnd);
         if (differenceDTOS == null) {
-            return HttpResult.failure("Time range error");
+            return HttpResult.failure("Query parameter error");
         }
         return HttpResult.success("success", differenceDTOS);
     }
@@ -40,6 +40,9 @@ public class InfluxDBController {
     public HttpResult queryRecent(@RequestParam final String parentId) {
         log.info("recent query called on {}", parentId);
         final List<DifferenceDTO> differenceDTOS = influxDBService.queryRecent(parentId);
+        if (differenceDTOS == null) {
+            return HttpResult.failure("Query parameter error");
+        }
         return HttpResult.success("success", differenceDTOS);
     }
 
