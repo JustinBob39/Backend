@@ -10,13 +10,14 @@ import java.util.concurrent.TimeUnit;
 
 public class InfluxDBGrafanaTest {
     @Test
-    public void fakeData() throws InterruptedException {
+    public void fakeDataDifference() throws InterruptedException {
         final String serverURL = "http://localhost:8086";
         final String database = "difference";
         final InfluxDB influxDB = InfluxDBFactory.connect(serverURL, "admin", "admin");
         influxDB.setDatabase(database);
-        for (int i = 0; i < 30; i++) {
-            influxDB.write(Point.measurement("Operator-InfluxDB")
+        // influxDB batch mode disable by default, so no worry
+        for (int i = 0; i < 20; i++) {
+            influxDB.write(Point.measurement("Operator-InfluxDB_Difference")
                     .time(Instant.now().toEpochMilli(), TimeUnit.MILLISECONDS)
                     .tag("parentId", "1")
                     .addField("frameStatus", "NORMAL")
@@ -44,8 +45,9 @@ public class InfluxDBGrafanaTest {
                     .addField("thirdChildValueSecond_Float", 6.66)
                     .addField("thirdChildValueSecond_String", "6.66")
                     .build());
-            System.out.println("Round " + (i + 1));
+            System.out.println("Difference round " + (i + 1));
             Thread.sleep(60 * 1000);
         }
+        influxDB.close();
     }
 }

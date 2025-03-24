@@ -1,5 +1,4 @@
-package cn.cas.ntsc.dao;
-
+package cn.cas.ntsc.dao.difference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +13,7 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Measurement(name = "Operator-InfluxDB")
+@Measurement(name = "Operator-InfluxDB_Difference")
 public class Difference {
     @Column(name = "time")
     private Instant time;

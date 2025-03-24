@@ -1,19 +1,19 @@
-package cn.cas.ntsc.converter;
+package cn.cas.ntsc.converter.difference;
 
-import cn.cas.ntsc.dao.Difference;
-import cn.cas.ntsc.dto.DifferenceDTO;
+import cn.cas.ntsc.dao.difference.Difference;
+import cn.cas.ntsc.dto.difference.DifferenceDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Converter {
-    public static List<DifferenceDTO> convert(Difference difference) {
+public class DifferenceConverter {
+    public static List<DifferenceDTO> convert(final Difference difference) {
         final List<DifferenceDTO> differenceDTOS = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             final DifferenceDTO.DifferenceDTOBuilder builder = DifferenceDTO.builder()
                     .time(difference.getTime())
                     .frameStatus(difference.getFrameStatus())
-                    .parentId(difference.getParentId())
+                    .parentId(Integer.parseInt(difference.getParentId()))
                     .parentStatus(difference.getParentStatus())
                     .parentEventTime(difference.getParentEventTime());
             if (i == 0) {

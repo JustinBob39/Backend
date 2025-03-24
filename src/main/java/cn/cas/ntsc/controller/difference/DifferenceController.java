@@ -1,9 +1,9 @@
-package cn.cas.ntsc.controller;
+package cn.cas.ntsc.controller.difference;
 
 import cn.cas.ntsc.HttpResult;
-import cn.cas.ntsc.dto.DifferenceDTO;
-import cn.cas.ntsc.dto.DifferentStatusDTO;
-import cn.cas.ntsc.service.InfluxDBService;
+import cn.cas.ntsc.dto.difference.DifferenceDTO;
+import cn.cas.ntsc.dto.difference.DifferentStatusDTO;
+import cn.cas.ntsc.service.difference.DifferenceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,21 +15,21 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/influxdb/difference")
-public class InfluxDBController {
+public class DifferenceController {
 
-    private final InfluxDBService influxDBService;
+    private final DifferenceService differenceService;
 
-    public InfluxDBController(InfluxDBService influxDBService) {
-        this.influxDBService = influxDBService;
+    public DifferenceController(DifferenceService differenceService) {
+        this.differenceService = differenceService;
     }
 
     @GetMapping("/range")
     public HttpResult queryRange(
-            @RequestParam final String parentId,
+            @RequestParam final Integer parentId,
             @RequestParam final Long rangeBegin,
             @RequestParam final Long rangeEnd) {
         log.info("range query called on {} from {} to {}", parentId, rangeBegin, rangeEnd);
-        final List<DifferenceDTO> differenceDTOS = influxDBService.queryRange(parentId, rangeBegin, rangeEnd);
+        final List<DifferenceDTO> differenceDTOS = differenceService.queryRange(parentId, rangeBegin, rangeEnd);
         if (differenceDTOS == null) {
             return HttpResult.failure("Query parameter error");
         }
@@ -37,19 +37,16 @@ public class InfluxDBController {
     }
 
     @GetMapping("/recent")
-    public HttpResult queryRecent(@RequestParam final String parentId) {
+    public HttpResult queryRecent(@RequestParam final Integer parentId) {
         log.info("recent query called on {}", parentId);
-        final List<DifferenceDTO> differenceDTOS = influxDBService.queryRecent(parentId);
-        if (differenceDTOS == null) {
-            return HttpResult.failure("Query parameter error");
-        }
+        final List<DifferenceDTO> differenceDTOS = differenceService.queryRecent(parentId);
         return HttpResult.success("success", differenceDTOS);
     }
 
     @GetMapping("/status")
     public HttpResult queryStatus() {
-        log.info("status called");
-        final DifferentStatusDTO statusDTO = influxDBService.queryStatus();
+        log.info("status query called");
+        final DifferentStatusDTO statusDTO = differenceService.queryStatus();
         return HttpResult.success("success", statusDTO);
     }
 }

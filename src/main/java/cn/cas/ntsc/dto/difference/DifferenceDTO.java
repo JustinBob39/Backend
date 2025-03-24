@@ -1,4 +1,4 @@
-package cn.cas.ntsc.dto;
+package cn.cas.ntsc.dto.difference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ public class DifferenceDTO {
 
     private String frameStatus;
 
-    private String parentId;
+    private Integer parentId;
     private String parentStatus;
     private String parentEventTime;
 
