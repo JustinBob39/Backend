@@ -25,10 +25,17 @@ public class DifferenceService {
     private static final String measureName = "Operator-InfluxDB_Difference";
     private static final String DBName = "difference";
     final private InfluxDB influxDB;
+    final private InfluxDBResultMapper influxDBResultMapper;
 
     @Autowired
     public DifferenceService(InfluxDB influxDB) {
         this.influxDB = influxDB;
+        influxDBResultMapper = new InfluxDBResultMapper();
+    }
+
+    private void audit(final String queryString) {
+        log.info("Executing SQL on {}.{}", DBName, measureName);
+        log.info(queryString);
     }
 
     public List<DifferenceDTO> queryRange(final Integer parentId, final Long rangeBegin, final Long rangeEnd) {
@@ -46,11 +53,9 @@ public class DifferenceService {
                 "SELECT * FROM \"%s\" WHERE \"parentId\" = '%d' AND \"time\" >= '%s' AND \"time\" <= '%s' ORDER BY \"time\" DESC LIMIT 256",
                 measureName, parentId, timeBegin, timeEnd
         );
-        log.info("Executing SQL on {}.{}", DBName, measureName);
-        log.info(queryString);
+        audit(queryString);
         final Query query = new Query(queryString, DBName);
         final QueryResult queryResult = influxDB.query(query);
-        final InfluxDBResultMapper influxDBResultMapper = new InfluxDBResultMapper();
         final List<Difference> pojoList = influxDBResultMapper.toPOJO(queryResult, Difference.class);
         return pojoList.stream().flatMap(difference -> DifferenceConverter.convert(difference).stream()).toList();
     }
@@ -60,11 +65,9 @@ public class DifferenceService {
                 "SELECT * FROM \"%s\" WHERE \"parentId\" = '%s' ORDER BY \"time\" DESC LIMIT 64",
                 measureName, parentId
         );
-        log.info("Executing SQL on {}.{}", DBName, measureName);
-        log.info(queryString);
+        audit(queryString);
         final Query query = new Query(queryString, DBName);
         final QueryResult queryResult = influxDB.query(query);
-        final InfluxDBResultMapper influxDBResultMapper = new InfluxDBResultMapper();
         final List<Difference> pojoList = influxDBResultMapper.toPOJO(queryResult, Difference.class);
         return pojoList.stream().flatMap(difference -> DifferenceConverter.convert(difference).stream()).toList();
     }
@@ -85,15 +88,13 @@ public class DifferenceService {
             currentTime = currentTime.plusSeconds(60);
         }
 
-        final InfluxDBResultMapper influxDBResultMapper = new InfluxDBResultMapper();
         final List<String> status = List.of("NORMAL", "TIMEOUT", "INITIAL");
         final AtomicInteger idx = new AtomicInteger();
         status.forEach(st -> {
             final String queryString = String.format(
                     "SELECT COUNT(\"frameStatus\") FROM \"%s\" WHERE \"time\" >= '%s' AND \"time\" <= '%s' AND \"frameStatus\" = '%s' GROUP BY \"frameStatus\", time(1m)",
                     measureName, startString, finishString, st);
-            log.info("Executing SQL on {}.{}", DBName, measureName);
-            log.info(queryString);
+            audit(queryString);
             final Query query = new Query(queryString, DBName);
             final QueryResult queryResult = influxDB.query(query);
             final List<DifferentStatus> pojoList = influxDBResultMapper.toPOJO(queryResult, DifferentStatus.class);
@@ -103,5 +104,21 @@ public class DifferenceService {
             idx.getAndIncrement();
         });
         return differentStatusDTO;
+    }
+
+    public List<DifferenceDTO> queryDisplay(final Integer pageNum, final Integer pageSize) {
+        if (pageNum < 0 || pageSize < 0) {
+            return null;
+        }
+        final int offset = pageSize * pageNum;
+        final String queryString = String.format(
+                "SELECT * FROM \"%s\" ORDER BY \"time\" DESC LIMIT %d OFFSET %d",
+                measureName, pageSize, offset
+        );
+        audit(queryString);
+        final Query query = new Query(queryString, DBName);
+        final QueryResult queryResult = influxDB.query(query);
+        final List<Difference> pojoList = influxDBResultMapper.toPOJO(queryResult, Difference.class);
+        return pojoList.stream().flatMap(difference -> DifferenceConverter.convert(difference).stream()).toList();
     }
 }

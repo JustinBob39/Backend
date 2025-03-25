@@ -60,7 +60,7 @@ public class DifferenceController {
     }
 
     @GetMapping("/export")
-    public void exportCSV(HttpServletResponse response, @RequestParam final Integer parentId) {
+    public void exportCSV(final HttpServletResponse response, @RequestParam final Integer parentId) {
         final String filename = "data-" + parentId + ".csv";
         response.setContentType("text/csv");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
@@ -74,5 +74,12 @@ public class DifferenceController {
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
             log.error(e.getMessage());
         }
+    }
+
+    @GetMapping("/display")
+    public HttpResult queryDisplay(@RequestParam final Integer pageNum, @RequestParam final Integer pageSize) {
+        log.info("display query called");
+        List<DifferenceDTO> differenceDTOS = differenceService.queryDisplay(pageNum, pageSize);
+        return HttpResult.success("success", differenceDTOS);
     }
 }

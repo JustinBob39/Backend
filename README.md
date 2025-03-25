@@ -30,11 +30,14 @@
 │   │   └── DifferentStatusDTO.java
 │   └── other
 │       └── OtherDTO.java
-└── service
-    ├── difference
-    │   └── DifferenceService.java
-    └── other
-        └── OtherService.java
+├── service
+│   ├── difference
+│   │   └── DifferenceService.java
+│   └── other
+│       └── OtherService.java
+└── util
+    └── CustomColumnPositionStrategy.java
+
 ```
 
 * Application，程序启动入口
@@ -58,8 +61,8 @@
 * InfluxDBGrafanaTest，往数据库中写入假数据，供grafana面板显示
 * InfluxDBInterfaceTest，往数据库中写入假数据，测试接口用
 
-目前，只实现了差分站状态及差分改正数最重要的四个后端接口，其他数据请参考Other模板  
-TODO：分页分表，OLAP，时序特色查询
+目前，只实现了差分站状态及差分改正数最重要的五个后端接口，其他数据请参考Other模板  
+TODO：OLAP，数据分析，时序特色查询，比如一段时间内的平均数、中位数、方差
 
 ## 接口文档
 
@@ -98,6 +101,17 @@ TODO：分页分表，OLAP，时序特色查询
 ![image_20](images/img_20.png)
 正常情况：
 ![image_21](images/img_21.png)
+
+### display
+路径：/api/influxdb/difference/display  
+描述：查询系统最新收到的差分站数据，用于分页展示  
+输入参数：pageNum和pageSize，Integer类型  
+返回结果：DifferenceDTO List对象，按时间倒序，对应请求需要的页面  
+正常情况：  
+![image_24](images/img_24.png)
+
+异常情况：pageNum或pageSize为负数  
+![image_25](images/img_25.png)
 
 ## 结合Grafana
 
