@@ -5,6 +5,7 @@ import cn.cas.ntsc.util.CustomColumnPositionStrategy;
 import cn.cas.ntsc.dto.difference.DifferenceDTO;
 import cn.cas.ntsc.dto.difference.DifferentStatusDTO;
 import cn.cas.ntsc.service.difference.DifferenceService;
+import cn.cas.ntsc.util.guava.annotation.RateLimiter;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -33,10 +34,8 @@ public class DifferenceController {
     }
 
     @GetMapping("/range")
-    public HttpResult queryRange(
-            @RequestParam final Integer parentId,
-            @RequestParam final Long rangeBegin,
-            @RequestParam final Long rangeEnd) {
+    @RateLimiter(qps = 512, timeout = 500)
+    public HttpResult queryRange(@RequestParam final Integer parentId, @RequestParam final Long rangeBegin, @RequestParam final Long rangeEnd) {
         log.info("range query called on {} from {} to {}", parentId, rangeBegin, rangeEnd);
         final List<DifferenceDTO> differenceDTOS = differenceService.queryRange(parentId, rangeBegin, rangeEnd);
         if (differenceDTOS == null) {
@@ -46,6 +45,7 @@ public class DifferenceController {
     }
 
     @GetMapping("/recent")
+    @RateLimiter(qps = 512, timeout = 500)
     public HttpResult queryRecent(@RequestParam final Integer parentId) {
         log.info("recent query called on {}", parentId);
         final List<DifferenceDTO> differenceDTOS = differenceService.queryRecent(parentId);
@@ -53,6 +53,7 @@ public class DifferenceController {
     }
 
     @GetMapping("/status")
+    @RateLimiter(qps = 512, timeout = 500)
     public HttpResult queryStatus() {
         log.info("status query called");
         final DifferentStatusDTO statusDTO = differenceService.queryStatus();
@@ -60,6 +61,7 @@ public class DifferenceController {
     }
 
     @GetMapping("/export")
+    @RateLimiter(qps = 128, timeout = 500)
     public void exportCSV(final HttpServletResponse response, @RequestParam final Integer parentId) {
         final String filename = "data-" + parentId + ".csv";
         response.setContentType("text/csv");
@@ -77,6 +79,7 @@ public class DifferenceController {
     }
 
     @GetMapping("/display")
+    @RateLimiter(qps = 512, timeout = 500)
     public HttpResult queryDisplay(@RequestParam final Integer pageNum, @RequestParam final Integer pageSize) {
         log.info("display query called");
         List<DifferenceDTO> differenceDTOS = differenceService.queryDisplay(pageNum, pageSize);
