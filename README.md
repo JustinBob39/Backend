@@ -58,7 +58,7 @@
 * InfluxDBGrafanaTest，往数据库中写入假数据，供grafana面板显示
 * InfluxDBInterfaceTest，往数据库中写入假数据，测试接口用
 
-目前，只实现了差分站状态及差分改正数最重要的三个后端接口，其他数据请参考Other模板  
+目前，只实现了差分站状态及差分改正数最重要的四个后端接口，其他数据请参考Other模板  
 TODO：分页分表，OLAP，时序特色查询
 
 ## 接口文档
@@ -89,6 +89,15 @@ TODO：分页分表，OLAP，时序特色查询
 返回结果：Map对象，key为分钟，value为三个数，分别对应正常、超时、初始数量  
 正常情况：
 ![image_16](images/img_16.png)
+
+### export
+路径：/api/influxdb/difference/export  
+描述：查询某个差分站最近的64条数据形成csv文件下载  
+输入参数：parentId为Integer类型  
+返回结果：csv文件
+![image_20](images/img_20.png)
+正常情况：
+![image_21](images/img_21.png)
 
 ## 结合Grafana
 
@@ -128,9 +137,9 @@ data = from(bucket: "example-bucket")
 SELECT used_percent FROM "example-db"."example-rp"."example-measurement" WHERE host=host1
 ```
 
-
 直接拼接SQL语句，需要注意SQL注入风险  
 如果上面接口中的parent为String类型，不能直接拼接，如下
+
 ```java
 final String queryString = String.format(
         "SELECT * FROM \"%s\" WHERE \"parentId\" = '%s' ORDER BY \"time\" DESC LIMIT 64",
